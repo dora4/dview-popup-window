@@ -2,6 +2,7 @@ package dora.widget
 
 import android.content.Context
 import android.graphics.Color
+import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
 import android.view.View
@@ -66,7 +67,7 @@ class DoraPopupWindow private constructor(private val context: Context) :
         height = ViewGroup.LayoutParams.WRAP_CONTENT
 
         // PopupWindow 本身背景透明
-        setBackgroundDrawable(null)
+        setBackgroundDrawable(BitmapDrawable())
         isFocusable = true
         isOutsideTouchable = true
         elevation = 0f // 去掉阴影
