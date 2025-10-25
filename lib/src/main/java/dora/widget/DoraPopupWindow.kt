@@ -6,6 +6,7 @@ import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import android.widget.PopupWindow
 import androidx.annotation.ColorInt
 import androidx.annotation.LayoutRes
@@ -14,7 +15,7 @@ class DoraPopupWindow private constructor(private val context: Context) :
     PopupWindow(context) {
 
     private var contentViewLayout: View? = null
-    private var cornerRadius = 16f
+    private var cornerRadiusDp = 12f
     private var backgroundColor = Color.WHITE
 
     fun contentView(@LayoutRes layoutId: Int): DoraPopupWindow {
@@ -27,9 +28,9 @@ class DoraPopupWindow private constructor(private val context: Context) :
         return this
     }
 
-    /** 设置圆角半径，单位 dp */
+    /** 设置背景圆角半径（单位 dp） */
     fun cornerRadius(dp: Float): DoraPopupWindow {
-        cornerRadius = dp
+        cornerRadiusDp = dp
         return this
     }
 
@@ -41,32 +42,48 @@ class DoraPopupWindow private constructor(private val context: Context) :
 
     /** 创建 PopupWindow */
     fun build(): DoraPopupWindow {
-        val radiusPx = context.resources.displayMetrics.density * cornerRadius
+        val density = context.resources.displayMetrics.density
+        val radiusPx = cornerRadiusDp * density
+
+        // 创建圆角背景
         val bg = GradientDrawable().apply {
             cornerRadius = radiusPx
             setColor(backgroundColor)
         }
 
-        val wrapper = contentViewLayout ?: View(context)
-        wrapper.background = bg
+        // 外层包裹 FrameLayout，用于设置内边距
+        val wrapper = FrameLayout(context).apply {
+            setPadding(radiusPx.toInt(), radiusPx.toInt(), radiusPx.toInt(), radiusPx.toInt())
+            background = bg
+        }
 
+        // 将内容添加到 wrapper
+        contentViewLayout?.let { wrapper.addView(it) }
+
+        // 设置 PopupWindow 内容
         contentView = wrapper
         width = ViewGroup.LayoutParams.WRAP_CONTENT
         height = ViewGroup.LayoutParams.WRAP_CONTENT
+
+        // PopupWindow 本身背景透明
+        setBackgroundDrawable(null)
         isFocusable = true
         isOutsideTouchable = true
-        elevation = 12f
+        elevation = 0f // 去掉阴影
 
         return this
     }
 
-    /** 在某个锚点 View 下方显示 */
+    /** 在锚点 View 下方显示 */
     fun show(anchor: View, xOff: Int = 0, yOff: Int = 0) {
         showAsDropDown(anchor, xOff, yOff)
     }
 
+    fun show(anchor: View) {
+        show(anchor, 0, 0)
+    }
+
     companion object {
-        @JvmStatic
         fun create(context: Context): DoraPopupWindow {
             return DoraPopupWindow(context)
         }
