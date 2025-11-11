@@ -85,6 +85,8 @@ class DoraPopupWindow private constructor(private val context: Context) :
     }
 
     companion object {
+
+        @JvmStatic
         fun create(context: Context): DoraPopupWindow {
             return DoraPopupWindow(context)
         }
