@@ -14,18 +14,23 @@ allprojects {
 }
 // 添加以下代码到app模块的build.gradle
 dependencies {
-    implementation 'com.github.dora4:dview-popup-window:1.5'
+    implementation 'com.github.dora4:dview-popup-window:1.6'
 }
 ```
 
 #### 使用方式
 ```kt
 val popup = DoraPopupWindow.create(context)
-.contentView(R.layout.popup_custom)
-.cornerRadius(12f)
-.backgroundColor(Color.WHITE)
-.onBind { view ->
-}
-.build()
+    .contentView(R.layout.popup_custom)
+    .cornerRadius(12f)
+    .backgroundColor(Color.WHITE)
+    .onBind { view ->
+        val tvTitle = view.findViewById<TextView>(R.id.tvTitle)
+        tvTitle.text = "Hello DoraPopupWindow"
+        tvTitle.setOnClickListener {
+            dismiss()
+        }
+    }
+    .build()
 popup.show(anchorView)
 ```
