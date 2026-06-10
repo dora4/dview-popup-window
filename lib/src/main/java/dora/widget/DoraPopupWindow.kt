@@ -30,6 +30,12 @@ import androidx.annotation.LayoutRes
  */
 class DoraPopupWindow private constructor(private val context: Context) :
     PopupWindow(context) {
+        
+    /** Popup 宽度 */
+    private var popupWidth = ViewGroup.LayoutParams.WRAP_CONTENT
+
+    /** Popup 高度 */
+    private var popupHeight = ViewGroup.LayoutParams.WRAP_CONTENT
 
     /** 内容 View（优先使用） */
     private var contentViewLayout: View? = null
@@ -109,6 +115,32 @@ class DoraPopupWindow private constructor(private val context: Context) :
     }
 
     /**
+     * 设置宽度。
+     *
+     * 支持：
+     * - ViewGroup.LayoutParams.WRAP_CONTENT
+     * - ViewGroup.LayoutParams.MATCH_PARENT
+     * - px
+     */
+    fun width(width: Int): DoraPopupWindow {
+        popupWidth = width
+        return this
+    }
+
+    /**
+     * 设置高度。
+     *
+     * 支持：
+     * - ViewGroup.LayoutParams.WRAP_CONTENT
+     * - ViewGroup.LayoutParams.MATCH_PARENT
+     * - px
+     */
+    fun height(height: Int): DoraPopupWindow {
+        popupHeight = height
+        return this
+    }
+
+    /**
      * 构建 PopupWindow。
      */
     fun build(): DoraPopupWindow {
@@ -145,8 +177,8 @@ class DoraPopupWindow private constructor(private val context: Context) :
 
         // 设置 PopupWindow 参数
         contentView = wrapper
-        width = ViewGroup.LayoutParams.WRAP_CONTENT
-        height = ViewGroup.LayoutParams.WRAP_CONTENT
+        width = popupWidth
+        height = popupHeight
 
         // 必须设置，否则点击外部不消失
         setBackgroundDrawable(BitmapDrawable())
