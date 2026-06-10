@@ -71,7 +71,7 @@ class DoraPopupWindow private constructor(private val context: Context) :
     /**
      * 绑定 View（用于初始化 UI / 点击事件）。
      */
-    fun onBind(block: (View) -> Unit): DoraPopupWindow {
+    fun onBind(block: DoraPopupWindow.(View) -> Unit): DoraPopupWindow {
         this.onBindView = block
         return this
     }
@@ -79,7 +79,7 @@ class DoraPopupWindow private constructor(private val context: Context) :
     /**
      * 显示时回调。
      */
-    fun onShow(block: () -> Unit): DoraPopupWindow {
+    fun onShow(block: DoraPopupWindow.() -> Unit): DoraPopupWindow {
         this.onShow = block
         return this
     }
@@ -87,7 +87,7 @@ class DoraPopupWindow private constructor(private val context: Context) :
     /**
      * 消失时回调。
      */
-    fun onDismiss(block: () -> Unit): DoraPopupWindow {
+    fun onDismiss(block: DoraPopupWindow.() -> Unit): DoraPopupWindow {
         this.onDismiss = block
         return this
     }
