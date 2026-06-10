@@ -44,13 +44,13 @@ class DoraPopupWindow private constructor(private val context: Context) :
     private var backgroundColor = Color.WHITE
 
     /** View 绑定回调（类似 ViewBinding） */
-    private var onBindView: ((View) -> Unit)? = null
+    private var onBindView: (DoraPopupWindow.(View) -> Unit)? = null
 
     /** 显示回调 */
-    private var onShow: (() -> Unit)? = null
+    private var onShow: (DoraPopupWindow.() -> Unit)? = null
 
     /** 消失回调 */
-    private var onDismiss: (() -> Unit)? = null
+    private var onDismiss: (DoraPopupWindow.() -> Unit)? = null
 
     /**
      * 设置内容布局（layoutId）。
@@ -122,7 +122,7 @@ class DoraPopupWindow private constructor(private val context: Context) :
         }
 
         // 绑定 View
-        contentViewLayout?.let { onBindView?.invoke(it) }
+        contentViewLayout?.let { onBindView?.invoke(this, it) }
 
         // 创建圆角背景
         val bg = GradientDrawable().apply {
@@ -157,7 +157,7 @@ class DoraPopupWindow private constructor(private val context: Context) :
 
         // 消失监听
         setOnDismissListener {
-            onDismiss?.invoke()
+            onDismiss?.invoke(this)
         }
 
         return this
@@ -168,7 +168,7 @@ class DoraPopupWindow private constructor(private val context: Context) :
      */
     fun show(anchor: View, xOff: Int = 0, yOff: Int = 0) {
         showAsDropDown(anchor, xOff, yOff)
-        onShow?.invoke()
+        onShow?.invoke(this)
     }
 
     /**
@@ -195,7 +195,7 @@ class DoraPopupWindow private constructor(private val context: Context) :
             0,
             location[1] - popupHeight
         )
-        onShow?.invoke()
+        onShow?.invoke(this)
     }
 
     /**
@@ -203,7 +203,7 @@ class DoraPopupWindow private constructor(private val context: Context) :
      */
     fun showTop(parent: View) {
         showAtLocation(parent, Gravity.TOP, 0, 0)
-        onShow?.invoke()
+        onShow?.invoke(this)
     }
 
     /**
@@ -211,7 +211,7 @@ class DoraPopupWindow private constructor(private val context: Context) :
      */
     fun showBottom(parent: View) {
         showAtLocation(parent, Gravity.BOTTOM, 0, 0)
-        onShow?.invoke()
+        onShow?.invoke(this)
     }
 
     /**
@@ -219,7 +219,7 @@ class DoraPopupWindow private constructor(private val context: Context) :
      */
     fun showAt(x: Int, y: Int, parent: View) {
         showAtLocation(parent, Gravity.TOP or Gravity.START, x, y)
-        onShow?.invoke()
+        onShow?.invoke(this)
     }
 
     /**
@@ -242,7 +242,7 @@ class DoraPopupWindow private constructor(private val context: Context) :
             location[0] - popupWidth - margin,
             location[1]
         )
-        onShow?.invoke()
+        onShow?.invoke(this)
     }
 
     /**
@@ -258,7 +258,7 @@ class DoraPopupWindow private constructor(private val context: Context) :
             location[0] + anchor.width + margin,
             location[1]
         )
-        onShow?.invoke()
+        onShow?.invoke(this)
     }
 
     /**
@@ -280,7 +280,7 @@ class DoraPopupWindow private constructor(private val context: Context) :
         val y = location[1] - popupHeight - margin
 
         showAtLocation(anchor, Gravity.TOP or Gravity.START, x, y)
-        onShow?.invoke()
+        onShow?.invoke(this)
     }
 
     /**
@@ -301,7 +301,7 @@ class DoraPopupWindow private constructor(private val context: Context) :
         val y = location[1] + anchor.height + margin
 
         showAtLocation(anchor, Gravity.TOP or Gravity.START, x, y)
-        onShow?.invoke()
+        onShow?.invoke(this)
     }
 
     /**
@@ -309,7 +309,7 @@ class DoraPopupWindow private constructor(private val context: Context) :
      */
     fun showCenter(parent: View) {
         showAtLocation(parent, Gravity.CENTER, 0, 0)
-        onShow?.invoke()
+        onShow?.invoke(this)
     }
 
     companion object {
