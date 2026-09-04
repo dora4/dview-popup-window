@@ -20,6 +20,7 @@ import androidx.annotation.LayoutRes
  * - Builder 风格链式调用
  * - 自定义布局 / View
  * - 圆角背景
+ * - 描边
  * - 多种显示方式（上下左右 / 居中 / 全屏定位）
  *
  * 适用场景：
@@ -28,9 +29,8 @@ import androidx.annotation.LayoutRes
  * - 底部弹窗（ActionSheet）
  * - 顶部提示 / 中间弹层
  */
-class DoraPopupWindow private constructor(private val context: Context) :
-    PopupWindow(context) {
-        
+class DoraPopupWindow private constructor(private val context: Context) : PopupWindow(context) {
+
     /** Popup 宽度 */
     private var popupWidth = ViewGroup.LayoutParams.WRAP_CONTENT
 
@@ -43,11 +43,17 @@ class DoraPopupWindow private constructor(private val context: Context) :
     /** 布局资源 ID（备用） */
     private var layoutId: Int? = null
 
-    /** 圆角（dp） */
-    private var cornerRadiusDp = 12f
+    /** 圆角 */
+    private var cornerRadius = 12f
 
     /** 背景颜色 */
     private var backgroundColor = Color.WHITE
+
+    /** 描边颜色 */
+    private var strokeColor = Color.TRANSPARENT
+
+    /** 描边宽度 */
+    private var strokeWidth: Int = 0
 
     /** View 绑定回调（类似 ViewBinding） */
     private var onBindView: (DoraPopupWindow.(View) -> Unit)? = null
@@ -91,7 +97,7 @@ class DoraPopupWindow private constructor(private val context: Context) :
     }
 
     /**
-     * 消失时回调。
+     * 消失回调。
      */
     fun onDismiss(block: DoraPopupWindow.() -> Unit): DoraPopupWindow {
         this.onDismiss = block
@@ -99,10 +105,10 @@ class DoraPopupWindow private constructor(private val context: Context) :
     }
 
     /**
-     * 设置圆角（dp）。
+     * 设置圆角。
      */
-    fun cornerRadius(dp: Float): DoraPopupWindow {
-        cornerRadiusDp = dp
+    fun cornerRadius(radius: Float): DoraPopupWindow {
+        cornerRadius = radius
         return this
     }
 
@@ -111,6 +117,37 @@ class DoraPopupWindow private constructor(private val context: Context) :
      */
     fun backgroundColor(@ColorInt color: Int): DoraPopupWindow {
         backgroundColor = color
+        return this
+    }
+
+    /**
+     * 设置描边颜色。
+     */
+    fun strokeColor(@ColorInt color: Int): DoraPopupWindow {
+        strokeColor = color
+        return this
+    }
+
+    /**
+     * 设置描边宽度。
+     */
+    fun strokeWidth(width: Int): DoraPopupWindow {
+        strokeWidth = width
+        return this
+    }
+
+    /**
+     * 设置描边。
+     *
+     * @param width 描边宽度
+     * @param color 描边颜色
+     */
+    fun stroke(
+        width: Int,
+        @ColorInt color: Int
+    ): DoraPopupWindow {
+        strokeWidth = width
+        strokeColor = color
         return this
     }
 
@@ -144,54 +181,45 @@ class DoraPopupWindow private constructor(private val context: Context) :
      * 构建 PopupWindow。
      */
     fun build(): DoraPopupWindow {
-        val density = context.resources.displayMetrics.density
-        val radiusPx = cornerRadiusDp * density
-
         // 初始化内容 View
         if (contentViewLayout == null && layoutId != null) {
             contentViewLayout =
                 LayoutInflater.from(context).inflate(layoutId!!, null)
         }
-
         // 绑定 View
         contentViewLayout?.let { onBindView?.invoke(this, it) }
-
         // 创建圆角背景
         val bg = GradientDrawable().apply {
-            cornerRadius = radiusPx
+            cornerRadius = this@DoraPopupWindow.cornerRadius
             setColor(backgroundColor)
+            if (strokeWidth > 0) {
+                setStroke(strokeWidth, strokeColor)
+            }
         }
-
         // 包裹一层容器（用于 padding + 圆角）
         val wrapper = FrameLayout(context).apply {
             setPadding(
-                radiusPx.toInt(),
-                radiusPx.toInt(),
-                radiusPx.toInt(),
-                radiusPx.toInt()
+                cornerRadius.toInt(),
+                cornerRadius.toInt(),
+                cornerRadius.toInt(),
+                cornerRadius.toInt()
             )
             background = bg
         }
-
         contentViewLayout?.let { wrapper.addView(it) }
-
         // 设置 PopupWindow 参数
         contentView = wrapper
         width = popupWidth
         height = popupHeight
-
         // 必须设置，否则点击外部不消失
         setBackgroundDrawable(BitmapDrawable())
-
         isFocusable = true
         isOutsideTouchable = true
         elevation = 8f
-
         // 消失监听
         setOnDismissListener {
             onDismiss?.invoke(this)
         }
-
         return this
     }
 
@@ -205,12 +233,10 @@ class DoraPopupWindow private constructor(private val context: Context) :
 
     /**
      * 显示在 anchor 上方（左对齐）。
-     * ⚠️ 使用 showAtLocation，支持更自由定位
      */
     fun showAbove(anchor: View) {
         val location = IntArray(2)
         anchor.getLocationOnScreen(location)
-
         contentView.measure(
             View.MeasureSpec.makeMeasureSpec(
                 anchor.resources.displayMetrics.widthPixels,
@@ -218,9 +244,7 @@ class DoraPopupWindow private constructor(private val context: Context) :
             ),
             View.MeasureSpec.UNSPECIFIED
         )
-
         val popupHeight = contentView.measuredHeight
-
         showAtLocation(
             anchor,
             Gravity.TOP or Gravity.START,
@@ -260,14 +284,11 @@ class DoraPopupWindow private constructor(private val context: Context) :
     fun showLeft(anchor: View, margin: Int = 0) {
         val location = IntArray(2)
         anchor.getLocationOnScreen(location)
-
         contentView.measure(
             View.MeasureSpec.UNSPECIFIED,
             View.MeasureSpec.UNSPECIFIED
         )
-
         val popupWidth = contentView.measuredWidth
-
         showAtLocation(
             anchor,
             Gravity.TOP or Gravity.START,
@@ -283,7 +304,6 @@ class DoraPopupWindow private constructor(private val context: Context) :
     fun showRight(anchor: View, margin: Int = 0) {
         val location = IntArray(2)
         anchor.getLocationOnScreen(location)
-
         showAtLocation(
             anchor,
             Gravity.TOP or Gravity.START,
@@ -299,18 +319,14 @@ class DoraPopupWindow private constructor(private val context: Context) :
     fun showAboveCenter(anchor: View, margin: Int = 0) {
         val location = IntArray(2)
         anchor.getLocationOnScreen(location)
-
         contentView.measure(
             View.MeasureSpec.UNSPECIFIED,
             View.MeasureSpec.UNSPECIFIED
         )
-
         val popupWidth = contentView.measuredWidth
         val popupHeight = contentView.measuredHeight
-
         val x = location[0] + anchor.width / 2 - popupWidth / 2
         val y = location[1] - popupHeight - margin
-
         showAtLocation(anchor, Gravity.TOP or Gravity.START, x, y)
         onShow?.invoke(this)
     }
@@ -321,17 +337,13 @@ class DoraPopupWindow private constructor(private val context: Context) :
     fun showBelowCenter(anchor: View, margin: Int = 0) {
         val location = IntArray(2)
         anchor.getLocationOnScreen(location)
-
         contentView.measure(
             View.MeasureSpec.UNSPECIFIED,
             View.MeasureSpec.UNSPECIFIED
         )
-
         val popupWidth = contentView.measuredWidth
-
         val x = location[0] + anchor.width / 2 - popupWidth / 2
         val y = location[1] + anchor.height + margin
-
         showAtLocation(anchor, Gravity.TOP or Gravity.START, x, y)
         onShow?.invoke(this)
     }
